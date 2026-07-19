@@ -10,46 +10,34 @@ if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
 
 from lane_ai.video import VideoIO
-from lane_ai.lane_detector import LaneDetector
-from lane_ai.overlay import display_lines, draw_status
-
-
-print("Lane AI starting...")
+from lane_ai.lane_detector import BikeCorridorDetector
+from lane_ai.overlay import draw_bike_corridor
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Lane AI")
-    parser.add_argument(
-        "--input",
-        default="data/input/input.mp4",
-        help="Path to input video",
-    )
-    parser.add_argument(
-        "--output",
-        default="outputs/lane_output.mp4",
-        help="Path to output video",
-    )
+    parser = argparse.ArgumentParser(description="Bike corridor detector")
+    parser.add_argument("--input", default="data/input/input.mp4")
+    parser.add_argument("--output", default="outputs/bike_corridor_output.mp4")
     args = parser.parse_args()
 
+    print("Bike corridor detector starting...")
+
     video = VideoIO(args.input, args.output)
-    detector = LaneDetector()
+    detector = BikeCorridorDetector()
 
     while True:
         success, frame = video.read()
         if not success:
             break
 
-        results = detector.detect(frame)
-        lane_lines = results["lane_lines"]
+        result = detector.detect(frame)
+        final_frame = draw_bike_corridor(frame, result)
 
-        line_image = display_lines(frame, lane_lines)
-        combo_image = cv2.addWeighted(frame, 0.9, line_image, 1.0, 1.0)
-        final_image = draw_status(combo_image, lane_lines)
+        cv2.imshow("Bike Corridor", final_frame)
+        video.write(final_frame)
 
-        cv2.imshow("Lane AI", final_image)
-        video.write(final_image)
-
-        if cv2.waitKey(1) & 0xFF == 27:
+        key = cv2.waitKey(1) & 0xFF
+        if key == 27 or key == ord("q"):
             break
 
     video.release()

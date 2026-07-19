@@ -5,9 +5,6 @@ import cv2
 
 class VideoIO:
     def __init__(self, input_path: str, output_path: str):
-        self.input_path = input_path
-        self.output_path = output_path
-
         input_file = Path(input_path)
         output_file = Path(output_path)
         output_file.parent.mkdir(parents=True, exist_ok=True)
